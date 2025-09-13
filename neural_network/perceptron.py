@@ -4,8 +4,6 @@ from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
-
-
 class Perceptron():
     def __init__(self, eta=0.01, n_iter=10):
         self.eta = eta
@@ -15,6 +13,20 @@ class Perceptron():
         weights = self.w[1:]
         bias = self.w[0]
         return np.dot(X, weights) + bias
+    
+    def predict_single(self, x):
+        weighted_sum = self.weighted_sum(x)
+        if weighted_sum > 0.0:
+            return 1
+        else:
+            return -1
+        
+    def predict_examples(self, X):
+        predictions = []
+        for x in X:
+            predictions.append(self.predict_single(x))
+        return predictions
+    
     
     def predict(self, X):
         return np.where(self.weighted_sum(X) >= 0.0, 1, -1)
@@ -31,7 +43,7 @@ class Perceptron():
 
             for xi, y in zip(X, Y):
 
-                y_pred = self.predict(xi)
+                y_pred = self.predict_single(xi)
 
                 update = self.eta * (y - y_pred)
 
@@ -49,6 +61,7 @@ class Perceptron():
     
 def main():
     df = pd.read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data', header=None)
+    df = shuffle(df)
 
     X = df.iloc[:, 0:4].values
     y = df.iloc[:, 4].values
@@ -63,7 +76,7 @@ def main():
 
     perceptron.fit(train_data, train_labels)
 
-    predictions = perceptron.predict(test_data)
+    predictions = perceptron.predict_examples(test_data)
 
     test_accuracy = accuracy_score(predictions, test_labels)
     print("Accuracy on test data: ", round(test_accuracy, 2) * 100, "%")
